@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 import re
 import pandas as pd
 import json
-from kestra import Kestra
 import sys
 import json
 
@@ -38,11 +37,11 @@ def get_accession_number(CIK, ticker, file_type_list, year_list, submission_file
                 "quarter": quarter,
                 "accession": accession_no,
                 "filing_date": filing_dates[idx],
-                "doc_url": f"https://www.sec.gov/Archives/edgar/data/{cik}/{accession_no}/{doc_name}"
+                "doc_url": f"https://www.sec.gov/Archives/edgar/data/{CIK}/{accession_no}/{doc_name}"
             })
     return accessions
 
-def extract_texts_10k(CIK, accession):
+def extract_texts_10k(CIK, ticker, accession):
     headers = {
             'User-Agent': 'xchencws@citibank.com',  # Replace with your details
             'Accept-Encoding': 'application/json',
@@ -50,7 +49,7 @@ def extract_texts_10k(CIK, accession):
         }
     json_list = []
 
-    accession_no = accession['accesion']
+    accession_no = accession['accession']
     year = accession['year']
     quarter = accession['quarter']
 
@@ -79,10 +78,23 @@ def extract_texts_10k(CIK, accession):
     # Parse the HTML
     soup = BeautifulSoup(doc_text, "html.parser")
 
-    section_name_10k = ["Business", "Risk Factors"]
+    section_name_10k = ["Business", "Risk Factors", "Unresolved Staff Comments", \
+        "Cybersecurity", "Properties", "Legal Proceedings", "Mine Safety Disclosures", \
+        "Market for Registrant's Common Equity, Related Stockholder Matters and Issuer Purchases of Equity Securities", \
+        "Management's Discussion and Analysis of Financial Condition and Results of Operations", \
+        "Quantitative and Qualitative Disclosures About Market Risk", \
+        "Financial Statements and Supplementary Data", \
+        "Changes in and Disagreements With Accountants on Accounting and Financial Disclosure", \
+        "Controls and Procedures", "Other Information", "Disclosure Regarding Foreign Jurisdictions that Prevent Inspections", \
+        "Directors, Executive Officers and Corporate Governance", \
+        "Executive Compensation", \
+        "Security Ownership of Certain Beneficial Owners and Management and Related Stockholder Matters", \
+        "Certain Relationships and Related Transactions, and Director Independence", \
+        "Principal Accountant Fees and Services", \
+        "Exhibits, Financial Statement Schedules"]
     # Find the link to the Business section
     
-    for first_section, second_section in zip(section_name_10k, section_name_10k[1:]):
+    for first_section, second_section in zip(section_name_10k, (section_name_10k[1:]+['Exhibits'])):
         first_link = soup.find("a", string=first_section)
         second_link = soup.find("a", string=second_section)
 
@@ -92,13 +104,13 @@ def extract_texts_10k(CIK, accession):
             print(f"{first_section} section href:", first_href)
         else:
             print(f"{first_section} section link not found")
-            return (last_modified_date, 0, 0)
+            continue
         if second_link:
             second_href = second_link.get("href")
             print(f"{second_section} section href:", second_href)
         else:
             print(f"{second_section} section link not found")
-            return (last_modified_date, 0, 0)
+            continue
         
         # Step 4: Go to base_url + second_href and find the start of the second section
         second_url =  txt_url + second_href
@@ -136,6 +148,7 @@ def extract_texts_10k(CIK, accession):
         # Step 7: Save or print the extracted content
         current_data = {
             "CIK": CIK,
+            "ticker": ticker,
             "year": year,
             "quarter": quarter,
             "filing_type": '10-K',
@@ -146,10 +159,10 @@ def extract_texts_10k(CIK, accession):
 
     return json_list
 
-def extract_text_8k(CIK, accesion):
+def extract_texts_8k(CIK, ticker, accesion):
     return []
 
-def extract_text_10q(CIK, accesion):
+def extract_texts_10q(CIK, ticker, accesion):
     return []
 
 def get_text_in_json(CIK, ticker, file_type_list, year_list, submission_file):
@@ -160,13 +173,13 @@ def get_text_in_json(CIK, ticker, file_type_list, year_list, submission_file):
         return (None, 0, 0)
     all_data = []
     for accession in accessions:
-        json_list_10k = extract_texts_10k(CIK, accession)
-        json_list_8k = extract_texts_10k(CIK, accession)
-        json_list_10q = extract_texts_10k(CIK, accession)
+        json_list_10k = extract_texts_10k(CIK, ticker, accession)
+        json_list_8k = extract_texts_8k(CIK, ticker, accession)
+        json_list_10q = extract_texts_10q(CIK, ticker, accession)
         all_data_cik = json_list_10k + json_list_8k + json_list_10q
         all_data += all_data_cik
 
-    filename = f'public_filing_text_by_section.json'
+    filename = f'public_filing_text_by_section_{ticker}.json'
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(all_data, f, indent=2, ensure_ascii=False)
 
@@ -181,4 +194,4 @@ if __name__ == "__main__":
     outputs = {
         'last_modified_date': output_data[0]
     }
-    Kestra.outputs(outputs)
+    # Kestra.outputs(outputs)
