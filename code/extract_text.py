@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -5,17 +7,38 @@ import pandas as pd
 import json
 import sys
 import json
+import time
+import boto3
 
-def get_accession_number(CIK, ticker, file_type_list, year_list, submission_file):
+def get_cik(ticker):
+    cik_ticker_df = pd.read_csv('../files/cik_ticker_dictionary.csv')
+    width = 10
+    cik_ticker_df['cik_str'] = cik_ticker_df['cik_str'].astype(str).str.zfill(width)
+    cik = cik_ticker_df[cik_ticker_df['ticker'] == ticker]['cik_str'].iloc[0]
+    return cik
+
+def get_submission_data(cik):
+    headers = {
+            'User-Agent': 'xchencws@citibank.com'
+            }
+
+    # Step 1: Get the list of filings
+    submission_url = f"https://data.sec.gov/submissions/CIK{cik}.json"
+    response = requests.get(submission_url, headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f"Failed with {response.status_code}: {response.text}")
+
+    submission_data = response.json()
+    return submission_data
+
+def get_accession_number(CIK, ticker, file_type_list, year_list, filings_data):
     headers = {
             'User-Agent': 'xchencws@citibank.com',  # Replace with your details
             'Accept-Encoding': 'application/json',
             'Host': 'www.sec.gov'
         }
-    
-    # Step 1: Get the list of filings
-    with open(submission_file, 'r') as file:
-        filings_data = json.load(file)
 
     # Step 2: Find all filings type in type list and year in year list
     forms = filings_data["filings"]["recent"]["form"]
@@ -67,6 +90,8 @@ def extract_texts_10k(CIK, ticker, accession):
     doc_index_filtered_df = doc_index_filtered_df[~doc_index_filtered_df['name'].str.contains(exclude_file_type, na=False)]
     doc_index_filtered_df = doc_index_filtered_df[doc_index_filtered_df['size'].replace('', 0).astype(int) > size_threshold]
 
+    if len(doc_index_filtered_df) < 1:
+        return []
     file_url_path = doc_index_filtered_df.iloc[0]['name']
     last_modified_date = doc_index_filtered_df.iloc[0]['last-modified']
     last_modified_date = last_modified_date.split(' ')[0]
@@ -74,7 +99,7 @@ def extract_texts_10k(CIK, ticker, accession):
     txt_url = f"https://www.sec.gov/Archives/edgar/data/{CIK}/{accession_no}/{file_url_path}"
     response = requests.get(txt_url, headers=headers)
     doc_text = response.text
-    print(txt_url)
+    # print(txt_url)
     # Parse the HTML
     soup = BeautifulSoup(doc_text, "html.parser")
 
@@ -101,15 +126,15 @@ def extract_texts_10k(CIK, ticker, accession):
         # If found, extract the href attribute
         if first_link:
             first_href = first_link.get("href")
-            print(f"{first_section} section href:", first_href)
+            # print(f"{first_section} section href:", first_href)
         else:
-            print(f"{first_section} section link not found")
+            # print(f"{first_section} section link not found")
             continue
         if second_link:
             second_href = second_link.get("href")
-            print(f"{second_section} section href:", second_href)
+            # print(f"{second_section} section href:", second_href)
         else:
-            print(f"{second_section} section link not found")
+            # print(f"{second_section} section link not found")
             continue
         
         # Step 4: Go to base_url + second_href and find the start of the second section
@@ -123,15 +148,15 @@ def extract_texts_10k(CIK, ticker, accession):
 
         if not second_tag:
             print(f"Could not find the {second_section} section in the document")
-            exit()
+            continue
 
         # Step 5: Find first Section Start
         first_start_tag = soup.find(attrs={"id": first_href.lstrip('#')}) or soup.find(attrs={"name": first_href.lstrip('#')})
         # print(first_start_tag)
 
         if not first_start_tag:
-            print(f"Could not find the {first_section} section in the document")
-            exit()
+            # print(f"Could not find the {first_section} section in the document")
+            continue
 
         # Step 6: Extract Text from Business Section Until second section
         content = []
@@ -165,12 +190,16 @@ def extract_texts_8k(CIK, ticker, accesion):
 def extract_texts_10q(CIK, ticker, accesion):
     return []
 
-def get_text_in_json(CIK, ticker, file_type_list, year_list, submission_file):
-    accessions = get_accession_number(CIK, ticker, file_type_list, year_list, submission_file)
+def get_text_in_json(ticker, file_type_list, year_list):
+    CIK = get_cik(ticker)
+    submission_data = get_submission_data(CIK)
+    accessions = get_accession_number(CIK, ticker, file_type_list, year_list, submission_data)
     try:
         print(accessions[0])
     except NameError:
-        return (None, 0, 0)
+        return []
+    except IndexError:
+        return []
     all_data = []
     for accession in accessions:
         json_list_10k = extract_texts_10k(CIK, ticker, accession)
@@ -179,19 +208,48 @@ def get_text_in_json(CIK, ticker, file_type_list, year_list, submission_file):
         all_data_cik = json_list_10k + json_list_8k + json_list_10q
         all_data += all_data_cik
 
-    filename = f'public_filing_text_by_section_{ticker}.json'
-    with open(filename, "w", encoding="utf-8") as f:
-        json.dump(all_data, f, indent=2, ensure_ascii=False)
-
-    print("Section content extracted successfully.")
-
     return all_data
 
 
 if __name__ == "__main__":
-    input_data = sys.argv[1:]  # Read from command-line args
-    output_data = get_text_in_json(*input_data)
-    outputs = {
-        'last_modified_date': output_data[0]
-    }
-    # Kestra.outputs(outputs)
+    load_dotenv()
+    aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
+    aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+    region_name = os.getenv("AWS_REGION")
+
+    s3 = boto3.client(
+        "s3",
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        region_name=region_name
+    )
+
+    bucket_name = "public-filings-text-by-section"
+    s3_folder = "filing_text_json/"
+
+    file_type_list = ['10-K']
+    year_list = ['2023', '2024', '2025']
+    ticker_df = pd.read_csv('../files/Nasdaq100List.csv')
+    ticker_list = ticker_df['Symbol'].to_list()
+    text_doc_data = []
+    file_idx = 0
+    bucket_size = 5
+    for idx, ticker in enumerate(ticker_list):
+        if idx / bucket_size <= file_idx+1:
+            json_data = get_text_in_json(ticker, file_type_list, year_list)
+            text_doc_data += json_data
+        if idx / bucket_size > file_idx+1:
+            filename = f'public_filing_text_by_section{file_idx}.json'
+            # with open(filename, "w", encoding="utf-8") as f:
+            #     json.dump(text_doc_data, f, indent=2, ensure_ascii=False)
+            json_bytes = json.dumps(text_doc_data).encode("utf-8")
+            s3.put_object(Bucket=bucket_name, Key=s3_folder+filename, Body=json_bytes)
+            file_idx = file_idx + 1 
+            text_doc_data = []
+            json_data = get_text_in_json(ticker, file_type_list, year_list)
+            text_doc_data = text_doc_data + json_data
+        if idx > bucket_size:
+            break
+        time.sleep(1)
+
+    print("Section content extracted successfully.")
