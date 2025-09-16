@@ -1,1 +1,0 @@
-{"indexed_fields":{"created_at":"datetime"},"indexed_types":{"created_at":[{"index_type":"datetime_index","mutability":"mutable","storage_type":"rocks_db"},{"index_type":"null_index","mutability":"mutable","storage_type":{"mmap":{"is_on_disk":false}}}]}}
