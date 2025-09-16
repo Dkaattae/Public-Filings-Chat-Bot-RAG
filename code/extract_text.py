@@ -248,8 +248,6 @@ if __name__ == "__main__":
             text_doc_data = []
             json_data = get_text_in_json(ticker, file_type_list, year_list)
             text_doc_data = text_doc_data + json_data
-        if idx > bucket_size:
-            break
         time.sleep(1)
 
     print("Section content extracted successfully.")

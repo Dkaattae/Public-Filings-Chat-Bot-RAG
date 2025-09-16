@@ -1,0 +1,3 @@
+[embeddings]
+provider = "fastembed"
+model = "multi-qa-MiniLM-L6-cos-v1"

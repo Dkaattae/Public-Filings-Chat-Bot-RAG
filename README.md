@@ -1,6 +1,7 @@
 # Edgar RAG
 ## TODO
 s3 -> qdrant   
+xbrl -> postgres
 rag pipeline   
 evaluation/MRR and hit rate    
    
@@ -13,18 +14,41 @@ UI, streamlit
 ![flowchart](images/RAG_pipeline_flowchart.drawio.png)
 
 ## data source
-100 nasdaq companies, dated back to 2024 to make data shorter.   
+100 nasdaq companies, dated back to 2023 to make data shorter.   
 text files from edgar 10k, chunk into sections   
 text files from edgar 8k, whole text    
 text files from edgar 10q, ???   
 xbrl data into postgres database   
 
 ## data pipeline
-kestra to download files and put into S3   
+dlt load json file from s3 to qdrant
 dlt download xbrl data from yahoo and load into postgres   
 
 ## vector database
-qdrant vector database    
+qdrant vector database   
+under project folder, pull and run qdrant 
+```
+docker pull qdrant/qdrant
+docker run -p 6333:6333 -p 6334:6334 \
+   -v "$(pwd)/db.qdrant:/qdrant/storage:z" \
+   qdrant/qdrant
+```
+in localhost:6333/dashboard
+right side of data collection, click visualize
+```
+{
+  "limit": 2000,
+  "using": "fast-bge-small-en",
+  "color_by": {
+    "payload": "ticker"
+  },
+  "filter": {
+    "must": [
+      {"key": "section", "match": {"value": "Business"} }
+    ]
+  }
+}
+```
 
 ## agentic RAG
 ### gaurdrails layer

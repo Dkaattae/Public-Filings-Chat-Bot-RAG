@@ -32,3 +32,4 @@ for i in range(20):
 company_count = data_df.groupby('ticker')['year'].count()
 print(f'company count: {len(company_count)}')
 print(f'document count: {company_count.sum()}')
+

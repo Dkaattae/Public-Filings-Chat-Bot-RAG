@@ -2,7 +2,7 @@ import dlt
 import yfinance as yf
 import pandas as pd
 
-nasdaq_tickers_df = pd.read_csv('Nasdaq100List.csv')
+nasdaq_tickers_df = pd.read_csv('../files/Nasdaq100List.csv')
 
 
 @dlt.resource(table_name="nasdaq_tickers")

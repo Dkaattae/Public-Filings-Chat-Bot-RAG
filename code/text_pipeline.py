@@ -1,6 +1,7 @@
 import dlt
 import os
-import requests
+import json
+import boto3
 from dotenv import load_dotenv
 from dlt.destinations import qdrant
 from dlt.destinations.adapters import qdrant_adapter
@@ -9,17 +10,26 @@ load_dotenv()
 
 @dlt.resource(table_name="public_filings_docs", max_table_nesting=0)
 def public_filing_data():
+    aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
+    aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+    region_name = os.getenv("AWS_REGION")
+
+    s3 = boto3.client(
+        "s3",
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        region_name=region_name
+    )
     bucket_name = "public-filings-text-by-section"
     s3_folder = "filing_text_json/"
-    bucket_number = 20
-    for i in range(bucket_number):
+    file_count = 10
+    for i in range(5,file_count):
         docs_path = f'public_filing_text_by_section{i}.json'
-        s3_path = f's3://{bucket_name}/{s3_folder}{docs_path}'
-        with fsspec.open(s3_path, "r") as f:
-            file = json.load(f)
-    
-            for doc in file:
-                yield doc
+        obj = s3.get_object(Bucket=bucket_name, Key=s3_folder+docs_path)
+        data = obj["Body"].read().decode("utf-8")
+        records = json.loads(data)
+        for doc in records:
+            yield doc
 
 if __name__ == "__main__":
     # qclient = QdrantClient(path="db.qdrant")
@@ -29,9 +39,6 @@ if __name__ == "__main__":
         port=6333,
         grpc_port=6334
     )
-
-    os.environ["DLT_EMBEDDINGS__PROVIDER"] = "sentence_transformers"
-    os.environ["DLT_EMBEDDINGS__MODEL_NAME"] = "all-MiniLM-L6-v2"
 
     pipeline = dlt.pipeline(
         pipeline_name="public_filing_pipeline",
