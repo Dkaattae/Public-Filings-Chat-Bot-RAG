@@ -1,2 +1,3 @@
 public_filing_text_by_section*.json
 .env
+company_public_info.duckdb

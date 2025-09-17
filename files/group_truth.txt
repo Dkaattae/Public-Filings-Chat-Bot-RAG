@@ -1,0 +1,20 @@
+What was the total revenue for [company] in [year/quarter]?
+What is the cost of revenue (COGS) for [company] last quarter?
+How much gross profit did [company] report in [period]?
+What is the operating income of [company] for the past fiscal year?
+What was the net income or net earnings for [company] in [year]?
+What is the EBITDA or normalized EBITDA of [company]?
+How much did [company] spend on R&D or selling, general, and administrative expenses?
+What was the interest expense or interest income reported?
+Did [company] have any unusual items, special income, or write-offs?
+
+What are the total assets of [company]?
+What is the total liabilities reported?
+How much equity does [company] have?
+What is the current ratio (current assets / current liabilities)?
+
+What was the net cash from operating activities?
+How much capital expenditure (CAPEX) did [company] report?
+What was the dividends paid in the last year?
+What is the free cash flow?
+

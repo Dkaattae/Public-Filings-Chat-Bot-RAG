@@ -1,0 +1,42 @@
+import os
+from google import genai
+from dotenv import load_dotenv
+
+load_dotenv()
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+prompt_template = """
+you are a chat bot, answering questions related to public company reports. 
+Answer QUESTION based on the CONTEXT from given reports.
+Try to use CONTEXT first, if you can not find related context, 
+look up in edgar filing system and answer with your own knowledge. 
+
+QUESTION: {question}
+
+CONTEXT: {context}
+""".strip()
+
+def build_vector_search_prompt(sentence, search_results):
+
+    context = ''
+
+    for doc in search_results:
+        context = context + doc.strip() + '\n\n'
+
+    prompt = prompt_template.format(question=sentence, context=context).strip()
+
+    return prompt
+
+def llm(prompt):
+    response = client.models.generate_content(
+        model="gemini-2.0-flash", contents=prompt
+    )
+    return response.text
+
+
+
+if __name__ == "__main__":
+    sentence = 'what did tesla report in 2024?'
+    search_results = ['ITEM 3.', 'LEGAL PROCEEDINGS', 'For a description of our material pending legal proceedings, please see Note 15,Commitments and Contingencies, to the consolidated financial statements included elsewhere in this Annual Report on Form 10-K.', 'For a description of our material pending legal proceedings, please see Note 15,', 'Commitments and Contingencies', ', to the consolidated financial statements included elsewhere in this Annual Report on Form 10-K.', 'In addition, each of the matters below is being disclosed pursuant to Item 103 of Regulation S-K because it relates to environmental regulations and aggregate civil penalties that we currently believe could potentially exceed $1 million. We believe that any proceeding that is material to our business or financial condition is likely to have potential penalties far in excess of such amount.', 'The German Umweltbundesamt issued our subsidiary in Germany a notice and fine in the amount of 12 million euro alleging its non-compliance under applicable laws relating to market participation notifications and take-back obligations with respect to end-of-life battery products required thereunder. In response to Tesla’s objection, the German Umweltbundesamt issued Tesla a revised fine notice dated April 29, 2021 in which it reduced the original fine amount to 1.45 million euro. This is primarily relating to administrative requirements, but Tesla has continued to take back battery packs, and filed a new objection in June 2021. A hearing took place on November 24, 2022, and the parties reached a settlement which resulted in a further reduction of the fine to 600,000 euro. Both parties have waived their right to appeal.', 'District attorneys in certain California counties are conducting an investigation into Tesla’s waste segregation practices pursuant to Cal. Health & Saf. Code section 25100 et seq. and Cal. Civil Code § 1798.80. Tesla has implemented various remedial measures, including conducting training and audits, and enhancements to its site waste management programs. While the outcome of this matter cannot be determined at this time, it is not currently expected to have a material adverse impact on our business.']
+    prompt = build_vector_search_prompt(sentence, search_results)
+    print(prompt)

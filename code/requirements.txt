@@ -8,10 +8,13 @@ bs4
 
 # Data Load Tool with S3 + Qdrant
 dlt[qdrant,s3]>=1.4.0   # or the latest stable release
-dlt[postgres]
+dlt[duckdb]
 
 # AWS SDK for Python
 boto3
 
 # vector database
 qdrant-client[fastembed]
+
+# llm
+google-genai

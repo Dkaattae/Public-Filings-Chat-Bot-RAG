@@ -25,6 +25,7 @@ def fetch_data(endpoint, ticker):
     if isinstance(data, pd.DataFrame):
         data = data.T  # Transpose to get correct format
         data.reset_index(inplace=True)  # Ensure "index" is available
+        data.rename(columns={"index": "filing_date"}, inplace=True)
         records = data.to_dict("records")  # Convert to list of dictionaries
         
         # Add ticker explicitly to each record
@@ -59,7 +60,7 @@ def company_cashflow():
 # Define the DLT pipeline
 pipeline = dlt.pipeline(
     pipeline_name="company_public_info",
-    destination="bigquery",
+    destination="duckdb",
     dataset_name="edgar_data"
 )
 
