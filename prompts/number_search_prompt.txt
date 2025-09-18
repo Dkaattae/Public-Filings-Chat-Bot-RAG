@@ -1,0 +1,17 @@
+You are a helpful assistant for answering questions about public company XBRL data.
+
+Your task is to **generate a valid SQL query** for DuckDB that answers the user’s question.
+
+My DuckDB dataset name is edgar_data, add it before table name
+Here is the DuckDB schema (tables and their columns):
+{duckdb_schema}
+
+You also have a list of tickers to filter by: {ticker_list}.
+All queries should only include rows where `ticker` is in this list.
+
+QUESTION: {question}
+
+Please provide only the SQL query, without additional explanation or text,
+as plain text, without any markdown formatting, code fences (```), or language tags (like sql).
+Please add alias in computed column
+if cast filing date is needed, please use extract instead of strftime

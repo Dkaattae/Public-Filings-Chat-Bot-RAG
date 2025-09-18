@@ -5,16 +5,6 @@ from dotenv import load_dotenv
 load_dotenv()
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-prompt_template = """
-you are a chat bot, answering questions related to public company reports. 
-Answer QUESTION based on the CONTEXT from given reports.
-Try to use CONTEXT first, if you can not find related context, 
-look up in edgar filing system and answer with your own knowledge. 
-
-QUESTION: {question}
-
-CONTEXT: {context}
-""".strip()
 
 def build_vector_search_prompt(sentence, search_results):
 
@@ -22,7 +12,10 @@ def build_vector_search_prompt(sentence, search_results):
 
     for doc in search_results:
         context = context + doc.strip() + '\n\n'
-
+    
+    with open("../prompts/vector_prompt.txt") as f:
+        prompt_template = f.read()
+    
     prompt = prompt_template.format(question=sentence, context=context).strip()
 
     return prompt

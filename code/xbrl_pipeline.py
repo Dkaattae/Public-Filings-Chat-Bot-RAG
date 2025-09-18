@@ -42,6 +42,11 @@ def company_info():
     for company in nasdaq_tickers_df["Symbol"]:
         yield from fetch_data("info", company)
 
+@dlt.resource(table_name="company_officers")
+def company_officers():
+    for company in nasdaq_tickers_df["Symbol"]:
+        yield from fetch_data("companyOfficers", company)
+
 @dlt.resource(table_name="financial_statement")
 def company_financial_statement():
     for company in nasdaq_tickers_df["Symbol"]:
@@ -65,4 +70,6 @@ pipeline = dlt.pipeline(
 )
 
 # Run the pipeline
-pipeline.run([nasdaq_ticker_list, company_info, company_financial_statement, company_balance_sheet, company_cashflow])
+pipeline.run([nasdaq_ticker_list, company_info, \
+    company_financial_statement, company_balance_sheet, company_cashflow, company_officers])
+# pipeline.run([nasdaq_ticker_list, company_officers])

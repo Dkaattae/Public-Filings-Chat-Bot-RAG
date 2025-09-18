@@ -5,38 +5,12 @@ from google import genai
 from dotenv import load_dotenv
 import vector_search
 import build_vector_search_prompt
+import build_number_search_prompt
 
 load_dotenv()
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-
-routing_prompt_template = """
-You are a query router. You must decide where to direct a user question. 
-user question must be about public company filings include 10k, 10q and 8k.
-- If it asks about structured/tabular data, choose Postgres. 
-- If it asks about unstructured text or documents, choose Qdrant. 
-- If both are needed, choose both. 
-- If unrelated, mark as irrelevant.
-
-postgres database schema: {postgres_schema}
-qdrant vector database schema: {qdrant_schema}
-
-user question: {question}
-JSON list of companies: {company_list}
-
-Given a user question and a JSON list of companies with their tickers, 
-return a JSON object. Provide the JSON output directly, as if I were reading it from a file, 
-without extra characters or formatting.
-
-{{
-  "ticker_list": ["TSLA", "AAPL"] or [],
-  "target": "qdrant" or "postgres" or "both" or "irrelevant"
-}}
-""".strip()
-
-postgres_schema = """
-    not exist yet
-    """.strip()
+duckdb_schema = build_number_search_prompt.get_schema()
 
 qdrant_schema = """
     payload schema columns include CIK, ticker, year, quarter, 
@@ -49,18 +23,25 @@ def csv_to_json(csv_file_path):
     json_str = json.dumps(data, indent=4)
     return json_str
 
+def load_prompt(path):
+    with open(path, "r") as f:
+        return f.read()
+
 def build_prompt(routing_target, question, search_results):
     if routing_target == 'qdrant':
         answer_prompt = build_vector_search_prompt.build_vector_search_prompt(question, search_results[0])
-    if routing_target == 'postgres':
-        answer_prompt = build_number_search_prompt(question, search_results)
+    if routing_target == 'duckdb':
+        result_dicts = search_results[0]
+        duckdb_prompt_template = load_prompt("../prompts/duckdb_prompt.txt")
+        answer_prompt = duckdb_prompt_template.format(question=sentence, result_dicts=result_dicts, \
+            duckdb_schema=build_number_search_prompt.get_schema())
     if routing_target == 'both':
-        answer_prompt = """
-        not yet build
-        """
+        both_prompt_template = load_prompt("../prompts/vector_and_number_prompt.txt")
+        answer_prompt = both_prompt_template.format(question=sentence, \
+            qdrant_results=search_results[0], duckdb_results=search_results[1])
     if routing_target == 'irrelevant':
         answer_prompt = """
-        you are a chat bot, answering questions related to public company reports. 
+        you are a financial analyst, answering questions related to public company reports. 
         user asked an irrelevant question, reject friendly
         """.strip()
     return answer_prompt
@@ -73,8 +54,9 @@ def llm(prompt):
 
 def rag(sentence):
     company_list = csv_to_json('../files/Nasdaq100List.csv')
+    routing_prompt_template = load_prompt("../prompts/routing_prompt.txt")
     rounting_prompt = routing_prompt_template.format(question=sentence, \
-        postgres_schema=postgres_schema, qdrant_schema=qdrant_schema, \
+        duckdb_schema=duckdb_schema, qdrant_schema=qdrant_schema, \
         company_list=company_list)
     routing_results = llm(rounting_prompt)
     if routing_results.startswith("```"):
@@ -85,9 +67,10 @@ def rag(sentence):
     if routing_results_json["target"] in ['qdrant', 'both']:
         vector_search_result = vector_search.vector_search(sentence, routing_results_json["ticker_list"])
         search_results.append(vector_search_result)
-    if routing_results_json["target"] in ['postgres', 'both']:
-        database_search_result = number_search(sentence, routing_results_json["ticker_list"])
-        search_results.append(database_search_result)
+    if routing_results_json["target"] in ['duckdb', 'both']:
+        duckdb_search_prompt = number_search_prompt(sentence, routing_results_json["ticker_list"], get_schema())
+        result_dicts = get_duckdb_results(duckdb_search_prompt)
+        search_results.append(result_dicts)
     answer_prompt = build_prompt(routing_results_json["target"], sentence, search_results)
     answer = llm(answer_prompt)
 
@@ -95,5 +78,6 @@ def rag(sentence):
 
 if __name__ == "__main__":
     sentence = 'what did tesla report in 2024?'
+    # sentence = 'what is the weather like today?'
     answer = rag(sentence)
     print(answer)

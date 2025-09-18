@@ -1,8 +1,8 @@
 # Edgar RAG
 ## TODO
-s3 -> qdrant   
-xbrl -> postgres
-rag pipeline   
+
+### Evaluation
+ground truth file
 evaluation/MRR and hit rate    
    
 need some research   
@@ -18,11 +18,12 @@ UI, streamlit
 text files from edgar 10k, chunk into sections   
 text files from edgar 8k, whole text    
 text files from edgar 10q, ???   
-xbrl data into postgres database   
+xbrl data into duckdb database   
 
 ## data pipeline
+download text files from edgar to s3
 dlt load json file from s3 to qdrant
-dlt download xbrl data from yahoo and load into postgres   
+dlt download xbrl data from yahoo and load into duckdb   
 
 ## vector database
 qdrant vector database   
@@ -50,33 +51,38 @@ right side of data collection, click visualize
 }
 ```
 
+## duckdb
+schema: 
+tables: company_info, financial_statement, balance_sheet, cashflow
+
+
 ## agentic RAG
-### gaurdrails layer
-store descriptions of qdrant database and postgres database summary and schema in a file.    
+### routing layer
+store descriptions of qdrant database and duckdb database summary and schema in a file.    
 ask LLM if user question is related to any of above database. 
-if not domain related, reject response
-if related to postgres, use search data function
-if qdrant database related, use search text function
-if none try your best
+if not domain related, target = irrelant
+if both database related, target = both
+if related to duckdb schema, target = duckdb
+if qdrant database related, target = qdrant
 
 ### workflow
 search data function:   
-provide postgres description, schema and user question   
+provide duckdb description, schema and user question   
 ask LLM to generate a sql query    
-parse sql query to postgres, and get response   
+parse sql query to duckdb, and get response   
 put response into LLM to generate a human readable answer   
 
 search text function:   
 embed user question, compare with vectors in qdrant   
-respond with top 10 relevant documents   
+respond with top 1 relevant documents   
 put relavant documents into LLM to generate an human readable answer   
    
 combine those answers if both related.    
 
 ## evaluataion
 ground truth file for text
-related doc -> possible question
-generate gold truth file for search data   
+related doc -> possible question -> doc_rag
+generate ground truth file for search data   
 example
 question: what is tesla's last year revenue, answer: 97.7 billion  
 
