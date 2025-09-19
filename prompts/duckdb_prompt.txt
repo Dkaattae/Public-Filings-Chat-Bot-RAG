@@ -4,5 +4,10 @@ If the database results are sufficient, use them directly in your answer.
 If they do not fully address the question, supplement with your own financial knowledge to provide a complete response.
 
 DuckDB schema: {duckdb_schema}
+you can associate tables with ticker and fiscal_year_end_date
+company_info__company_officers and company_info__corporate_actions are child table, 
+derived from company_info. associate child table using column '_dlt_parent_it' 
+with '_dlt_id' in parent table. 
+
 User question: {question}
 Query results from DuckDB: {result_dicts}

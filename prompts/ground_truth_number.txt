@@ -2,19 +2,21 @@
 “When was {company} incorporated?”
 “What is the industry of {company}?”
 “Where is the headquarters of {company} located?”
+"What was the officers change in recent year for {company}?"
+"Which company change CEO in recent year?"
 
 “What was the total revenue of {company} in {year}?”
-“What was the net income of {company} in {year} Q{quarter}?”
+“What was the net income of {company} in {year}?”
 “How did operating expenses change from {year1} to {year2} for {company}?”
-“What percentage of revenue was cost of goods sold in {year}?”
-“What is the ratio of net income to revenue for {year}?”
+“What percentage of revenue was cost of goods sold for {company} in {year}?”
+“What is the ratio of net income to revenue for {company} in {year}”
 "What is the average profit of {company} across last 3 years?"
 
 “What were the total assets of {company} in {year}?”
 “What were the current liabilities of {company} in {year}?”
 “What was the debt-to-equity ratio of {company} in {year}?”
 “Compare cash and cash equivalents in {year1} and {year2} for {company}.”
-"Compare debt to equity of {company1} and {company2}."
+"Compare debt to equity of {company1} and {company2} in {year}."
 "What is the average of Working Capital of {company} across last 2 years?"
 "What is the year over year growth in Total Assets of {company}?"
 

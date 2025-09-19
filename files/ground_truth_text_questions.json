@@ -1,0 +1,55 @@
+[
+    {
+        "section": "Business",
+        "questions": [
+            "What are the company's primary revenue streams and how have they evolved over the past three years?",
+            "How does the company's competitive positioning differ from its main rivals, and what barriers to entry exist in their markets?",
+            "What geographic markets does the company operate in, and what percentage of revenue comes from international operations?"
+        ]
+    },
+    {
+        "section": "Risk Factors",
+        "questions": [
+            "Which risk factors are new or have been significantly modified compared to the prior year's filing?",
+            "How do the company's operational risks compare to regulatory or market risks in terms of potential financial impact?",
+            "Are there any risks related to key customer concentration, supplier dependence, or technological disruption that could materially affect future performance?"
+
+        ]
+    },
+    {
+        "section": "Legal Proceedings",
+        "questions": [
+            "What is the potential financial exposure from ongoing litigation, and how has management reserved for these contingencies?",
+            "Are there any regulatory investigations or enforcement actions that could result in material fines or operational restrictions?",
+            "How do current legal proceedings compare to historical patterns for this company and industry?"
+        ]
+    },
+    {
+        "section": "Management's Discussion and Analysis",
+        "questions": [
+            "What are the key drivers behind year-over-year changes in gross margins and operating margins?",
+            "How does management explain any significant variances between actual results and previous guidance?",
+            "What capital allocation priorities does management outline, and how do they plan to fund growth initiatives?"
+        ]
+    },
+    {
+        "section": "Market for Registrant's Common Equity",
+        "questions": [
+            "provides key context on stock holder matters, dividend info, and share repurchases."
+        ]
+    },
+    {
+        "section": "Management's Discussion and Analysis of Financial Condition and Results of Operations",
+        "questions": [
+            "is crucial for qualitative insight on performance and strategy."
+        ]
+    },
+    {
+        "section": "Quantitative and Qualitative Disclosures About Market Risk",
+        "questions": [
+            "reveal company exposure to risks like interest rates, currency, or commodity prices."
+        ]
+    }
+]
+
+

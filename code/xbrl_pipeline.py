@@ -25,7 +25,7 @@ def fetch_data(endpoint, ticker):
     if isinstance(data, pd.DataFrame):
         data = data.T  # Transpose to get correct format
         data.reset_index(inplace=True)  # Ensure "index" is available
-        data.rename(columns={"index": "filing_date"}, inplace=True)
+        data.rename(columns={"index": "fiscal_year_end_date"}, inplace=True)
         records = data.to_dict("records")  # Convert to list of dictionaries
         
         # Add ticker explicitly to each record
@@ -41,11 +41,6 @@ def fetch_data(endpoint, ticker):
 def company_info():
     for company in nasdaq_tickers_df["Symbol"]:
         yield from fetch_data("info", company)
-
-@dlt.resource(table_name="company_officers")
-def company_officers():
-    for company in nasdaq_tickers_df["Symbol"]:
-        yield from fetch_data("companyOfficers", company)
 
 @dlt.resource(table_name="financial_statement")
 def company_financial_statement():
@@ -71,5 +66,4 @@ pipeline = dlt.pipeline(
 
 # Run the pipeline
 pipeline.run([nasdaq_ticker_list, company_info, \
-    company_financial_statement, company_balance_sheet, company_cashflow, company_officers])
-# pipeline.run([nasdaq_ticker_list, company_officers])
+    company_financial_statement, company_balance_sheet, company_cashflow])

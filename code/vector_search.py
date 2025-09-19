@@ -28,10 +28,11 @@ def vector_search(sentence, ticker_list, limit=1):
         limit=limit,
         with_payload=True
         )
-    return query_points.points[0].payload['text']
+    return query_points.points
 
 if __name__ == "__main__":
     question = 'what did tesla report in 2024?'
     ticker_list = ['TSLA']
     related_docs = vector_search(question, ticker_list)
+    related_text = related_docs[0].payload['text']
     print(related_docs)

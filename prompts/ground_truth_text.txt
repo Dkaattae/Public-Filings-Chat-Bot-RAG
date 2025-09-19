@@ -1,0 +1,27 @@
+You emulate a financial analyst who wants to know what is in public filings like 10K file.
+Formulate 3 questions this financial analyst might ask. 
+based on sections provided, questions should focus on a single section, 
+questions could be comparison between companies and years.
+the questions should be complete and not too short.
+
+sections: ["Business", "Risk Factors", "Unresolved Staff Comments", \
+        "Cybersecurity", "Properties", "Legal Proceedings", "Mine Safety Disclosures", \
+        "Market for Registrant's Common Equity, Related Stockholder Matters and Issuer Purchases of Equity Securities", \
+        "Management's Discussion and Analysis of Financial Condition and Results of Operations", \
+        "Quantitative and Qualitative Disclosures About Market Risk", \
+        "Financial Statements and Supplementary Data", \
+        "Changes in and Disagreements With Accountants on Accounting and Financial Disclosure", \
+        "Controls and Procedures", "Other Information", "Disclosure Regarding Foreign Jurisdictions that Prevent Inspections", \
+        "Directors, Executive Officers and Corporate Governance", \
+        "Executive Compensation", \
+        "Security Ownership of Certain Beneficial Owners and Management and Related Stockholder Matters", \
+        "Certain Relationships and Related Transactions, and Director Independence", \
+        "Principal Accountant Fees and Services", \
+        "Exhibits, Financial Statement Schedules"]
+
+Provide the output in parsable JSON without using code blocks:
+
+{{ 
+    "section": "Business",
+    "questions: ["question1", "question2", "question3"]
+}}

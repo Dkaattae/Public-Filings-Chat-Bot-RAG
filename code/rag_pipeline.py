@@ -1,6 +1,7 @@
 import os
 import csv
 import json
+from itertools import chain
 from google import genai
 from dotenv import load_dotenv
 import vector_search
@@ -66,10 +67,13 @@ def rag(sentence):
     search_results = []
     if routing_results_json["target"] in ['qdrant', 'both']:
         vector_search_result = vector_search.vector_search(sentence, routing_results_json["ticker_list"])
-        search_results.append(vector_search_result)
+        context_texts = [d.payload["text"] for d in vector_search_result]
+        flat_contexts = list(chain.from_iterable(context_texts))
+        search_results.append("\n".join(flat_contexts))
     if routing_results_json["target"] in ['duckdb', 'both']:
-        duckdb_search_prompt = number_search_prompt(sentence, routing_results_json["ticker_list"], get_schema())
-        result_dicts = get_duckdb_results(duckdb_search_prompt)
+        duckdb_search_prompt = build_number_search_prompt.number_search_prompt(sentence, \
+            routing_results_json["ticker_list"], build_number_search_prompt.get_schema())
+        result_dicts = build_number_search_prompt.get_duckdb_results(duckdb_search_prompt)
         search_results.append(result_dicts)
     answer_prompt = build_prompt(routing_results_json["target"], sentence, search_results)
     answer = llm(answer_prompt)
@@ -77,7 +81,7 @@ def rag(sentence):
     return answer
 
 if __name__ == "__main__":
-    sentence = 'what did tesla report in 2024?'
-    # sentence = 'what is the weather like today?'
+    # sentence = 'what was the cost of revenue of tesla in 2024?'
+    sentence = "How does Microsoft's competitive positioning differ from its main rivals, and what barriers to entry exist in their markets?"
     answer = rag(sentence)
     print(answer)

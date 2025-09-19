@@ -2,8 +2,14 @@
 ## TODO
 
 ### Evaluation
-ground truth file
-evaluation/MRR and hit rate    
+ground truth file duckdb
+ground truth file qdrant
+ground truth file router
+metrics
+MRR, Recall@k and hit rate for qdrant eval
+% of correctly retrieved fields for duckdb eval
+accuracy, f1 for router eval
+
    
 need some research   
 evaluation/ground truth   
@@ -12,6 +18,14 @@ UI, streamlit
 
 ## flowchart
 ![flowchart](images/RAG_pipeline_flowchart.drawio.png)
+
+## steps
+1, get gemini api key from google ai studio, see llm model section
+2, start qdrant server, see qdrant section
+3, load docs into qdrant by running text_pipeline.py
+4, load xbrl into duckdb by running xbrl_pipeline.py
+5, run rag_pipeline.py with question
+6, run evaluate.py to get metrics
 
 ## data source
 100 nasdaq companies, dated back to 2023 to make data shorter.   
@@ -23,7 +37,7 @@ xbrl data into duckdb database
 ## data pipeline
 download text files from edgar to s3
 dlt load json file from s3 to qdrant
-dlt download xbrl data from yahoo and load into duckdb   
+dlt download xbrl data from yahoo finance and load into duckdb   
 
 ## vector database
 qdrant vector database   
@@ -54,7 +68,21 @@ right side of data collection, click visualize
 ## duckdb
 schema: 
 tables: company_info, financial_statement, balance_sheet, cashflow
+dlt flattens company_info with two more child tables:       company_info__company_officer and company_info__corporate_actions   
+there is a column '_dlt_parent_id' in child table to associate with '_dlt_id' in parent table. 
+full schema see files/duckdb_schema.txt
 
+## llm model
+i use google gemini model gemini-2.0-flash, which has a free tier.
+go to [google ai studio](https://aistudio.google.com/app/apikey) to get a free api key.
+then export as environment variable
+`GEMINI_API_KEY="<your_api_key>"`
+make sure to include double quotes.
+
+## vector search
+in vector database, only text is embeded as vector, other fields are in payload.   
+embed the question using the same model and then compare cosine similarity with the vector in qdrant.   
+ticker filter is used.  
 
 ## agentic RAG
 ### routing layer
@@ -80,16 +108,38 @@ put relavant documents into LLM to generate an human readable answer
 combine those answers if both related.    
 
 ## evaluataion
-ground truth file for text
-related doc -> possible question -> doc_rag
-generate ground truth file for search data   
-example
-question: what is tesla's last year revenue, answer: 97.7 billion  
-
+### qdrant vector search eval   
+ground truth file for text   
+related doc -> possible question -> doc_rag   
+compare ground truth doc_id with doc_id in vector_search(gorund truth question) 
+metric: hit rate and MRR   
+hit rate:  0.588358131036283   
+mrr:  0.38084051161576477
+### duckdb number search eval   
+generate ground truth file for numbers     
+example      
+question: what is tesla's last year revenue, answer: 97,700,000,000  
+tolerate level (1%)    
+compare ground truth answer number with number_search(ground truth question)
+metric: % of correctly retrieval   
+### router layer eval
+from above two ground truth files, put questions in router layer, compare true target to router target.   
+compare router llm generated target with ground truth retriever
+compare router llm generated ticker list with ground truth ticker list. 
+metric: accuracy, F1
+### full pipeline eval
+combine above two ground truth files.    
+compare rag(ground truth question) with ground truth answer text
+text metric: rouge   
+number metric: accuracy
+combined score: 50% rouge_text + 50% accuracy_number if number exists
+rouge_text if number not exists
 
 ## monitoring
 ???   
 
 # Next Step
-1, monitoring
-2,log chat history. if user ask follow up question, feed history back in
+1, add 8k, 10q, 4 in doc sources
+2, monitoring
+3, log chat history. if user ask follow up question, feed history back in
+4, deployment

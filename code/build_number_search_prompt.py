@@ -45,9 +45,10 @@ def get_duckdb_results(duckdb_search_prompt):
     return result_dicts
 
 if __name__ == "__main__":
-    # sentence = "what was the cost of revenue of tesla in 2024"
-    sentence = "Who is the current CEO of Tesla?"
+    sentence = "what was the cost of revenue of tesla in 2024"
+    # sentence = "Who is the current CEO of Tesla?"
     ticker_list = ['TSLA']
+    # print(get_schema())
     duckdb_search_prompt = number_search_prompt(sentence, ticker_list, get_schema())
     result_dicts = get_duckdb_results(duckdb_search_prompt)
     print(result_dicts)

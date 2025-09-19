@@ -22,8 +22,8 @@ def public_filing_data():
     )
     bucket_name = "public-filings-text-by-section"
     s3_folder = "filing_text_json/"
-    file_count = 10
-    for i in range(5,file_count):
+    file_count = 20
+    for i in range(file_count):
         docs_path = f'public_filing_text_by_section{i}.json'
         obj = s3.get_object(Bucket=bucket_name, Key=s3_folder+docs_path)
         data = obj["Body"].read().decode("utf-8")
