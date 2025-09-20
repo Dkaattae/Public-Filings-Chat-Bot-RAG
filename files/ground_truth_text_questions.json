@@ -2,17 +2,17 @@
     {
         "section": "Business",
         "questions": [
-            "What are the company's primary revenue streams and how have they evolved over the past three years?",
-            "How does the company's competitive positioning differ from its main rivals, and what barriers to entry exist in their markets?",
-            "What geographic markets does the company operate in, and what percentage of revenue comes from international operations?"
+            "What are {company}'s primary revenue streams and how have they evolved over the past three years?",
+            "How does {company}'s competitive positioning differ from its main rivals, and what barriers to entry exist in their markets for year {year}?",
+            "What geographic markets does {company} operate in, and what percentage of revenue comes from international operations in {year}?"
         ]
     },
     {
         "section": "Risk Factors",
         "questions": [
-            "Which risk factors are new or have been significantly modified compared to the prior year's filing?",
-            "How do the company's operational risks compare to regulatory or market risks in terms of potential financial impact?",
-            "Are there any risks related to key customer concentration, supplier dependence, or technological disruption that could materially affect future performance?"
+            "Which {company}'s risk factors are new or have been significantly modified for year {year} compared to the prior year's filing?",
+            "How do {company}'s operational risks compare to regulatory or market risks in terms of potential financial impact?",
+            "Are there any risks related to {company}'s key customer concentration, supplier dependence, or technological disruption that could materially affect future performance?"
 
         ]
     },

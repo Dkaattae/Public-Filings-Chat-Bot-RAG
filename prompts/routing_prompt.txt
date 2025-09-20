@@ -4,6 +4,7 @@ user question must be about public company filings include 10k, 10q and 8k.
 - If it asks about unstructured text or documents, choose Qdrant. 
 - If both are needed, choose both. 
 - If unrelated, mark as irrelevant.
+- If company mentioned not in the company list, choose not_in_list.
 
 duckdb database schema: {duckdb_schema}
 qdrant vector database schema: {qdrant_schema}
@@ -12,10 +13,16 @@ user question: {question}
 JSON list of companies: {company_list}
 
 Given a user question and a JSON list of companies with their tickers, 
-return a JSON object. Provide the JSON output directly, as if I were reading it from a file, 
+return a JSON object. 
+ticker list include all tickers mentioned. if none, return []. 
+year is the year mentioned in user question. if not mentioned, year is the recent year. 
+target is the routing target mentioned above. 
+
+Provide the JSON output directly, as if I were reading it from a file, 
 without extra characters or formatting.
 
 {{
   "ticker_list": ["TSLA", "AAPL"] or [],
+  "year": year,
   "target": "qdrant" or "duckdb" or "both" or "irrelevant"
 }}

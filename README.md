@@ -3,16 +3,13 @@
 
 ### Evaluation
 ground truth file duckdb
-ground truth file qdrant
 ground truth file router
 metrics
-MRR, Recall@k and hit rate for qdrant eval
 % of correctly retrieved fields for duckdb eval
 accuracy, f1 for router eval
 
    
 need some research   
-evaluation/ground truth   
 monitoring   
 UI, streamlit
 
@@ -25,19 +22,22 @@ UI, streamlit
 3, load docs into qdrant by running text_pipeline.py
 4, load xbrl into duckdb by running xbrl_pipeline.py
 5, run rag_pipeline.py with question
-6, run evaluate.py to get metrics
+6, run evaluate_vector.py to get vector search metrics
+7, run evaluate_number.py to get number search metrics
+8, run evaluate_router.py to get llm router metrics
 
 ## data source
 100 nasdaq companies, dated back to 2023 to make data shorter.   
 text files from edgar 10k, chunk into sections   
 text files from edgar 8k, whole text    
 text files from edgar 10q, ???   
-xbrl data into duckdb database   
+xbrl data from yahoo finance
 
 ## data pipeline
-download text files from edgar to s3
-dlt load json file from s3 to qdrant
-dlt download xbrl data from yahoo finance and load into duckdb   
+download text files from edgar to s3   
+dlt load json file from s3 to qdrant   
+dlt download xbrl data from yahoo finance and load into duckdb       
+update recent fiscal year end and filing date based on dlt incremental loading   
 
 ## vector database
 qdrant vector database   
@@ -48,8 +48,8 @@ docker run -p 6333:6333 -p 6334:6334 \
    -v "$(pwd)/db.qdrant:/qdrant/storage:z" \
    qdrant/qdrant
 ```
-in localhost:6333/dashboard
-right side of data collection, click visualize
+in localhost:6333/dashboard   
+right side of data collection, click visualize   
 ```
 {
   "limit": 2000,
@@ -66,23 +66,25 @@ right side of data collection, click visualize
 ```
 
 ## duckdb
-schema: 
+schema:    
 tables: company_info, financial_statement, balance_sheet, cashflow
 dlt flattens company_info with two more child tables:       company_info__company_officer and company_info__corporate_actions   
-there is a column '_dlt_parent_id' in child table to associate with '_dlt_id' in parent table. 
-full schema see files/duckdb_schema.txt
+there is a column '_dlt_parent_id' in child table to associate with '_dlt_id' in parent table.    
+full schema see files/duckdb_schema.txt   
 
 ## llm model
-i use google gemini model gemini-2.0-flash, which has a free tier.
-go to [google ai studio](https://aistudio.google.com/app/apikey) to get a free api key.
-then export as environment variable
-`GEMINI_API_KEY="<your_api_key>"`
-make sure to include double quotes.
+i use google gemini model gemini-2.0-flash, which has a free tier.   
+go to [google ai studio](https://aistudio.google.com/app/apikey) to get a free api key.   
+then export as environment variable   
+`GEMINI_API_KEY="<your_api_key>"`   
+make sure to include double quotes.   
 
 ## vector search
-in vector database, only text is embeded as vector, other fields are in payload.   
-embed the question using the same model and then compare cosine similarity with the vector in qdrant.   
-ticker filter is used.  
+in vector database, only text is embeded as vector, other fields are in payload.      
+embed the question using the same model and then compare cosine similarity with the vector in qdrant.     
+ticker and year filter is used.    
+
+note: adding a code logic of year into searching will be very helpful with hit rate. currently i have llm list recent year and then filter by that year. the recent year is current year, but the filing may be done the year before. i will add a json file listed ticker, fiscal year end and recent filing date. routing llm only spit out year mentioned in question, which could be 'recent', 'latest'. if so llm would return [] in year. 
 
 ## agentic RAG
 ### routing layer
@@ -113,8 +115,8 @@ ground truth file for text
 related doc -> possible question -> doc_rag   
 compare ground truth doc_id with doc_id in vector_search(gorund truth question) 
 metric: hit rate and MRR   
-hit rate:  0.588358131036283   
-mrr:  0.38084051161576477
+hit rate:  0.8037066040198382
+mrr:  0.6763247193944136
 ### duckdb number search eval   
 generate ground truth file for numbers     
 example      
@@ -142,4 +144,5 @@ rouge_text if number not exists
 1, add 8k, 10q, 4 in doc sources
 2, monitoring
 3, log chat history. if user ask follow up question, feed history back in
-4, deployment
+4, orchestration
+5, deployment
