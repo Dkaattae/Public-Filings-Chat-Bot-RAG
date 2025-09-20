@@ -37,22 +37,22 @@ def fetch_data(endpoint, ticker):
     return []  # Default to an empty list if data is not recognized
 
 # Define DLT resources for each financial dataset
-@dlt.resource(table_name="company_info")
+@dlt.resource(table_name="company_info", primary_key=["ticker", "fiscal_year_end_date"])
 def company_info():
     for company in nasdaq_tickers_df["Symbol"]:
         yield from fetch_data("info", company)
 
-@dlt.resource(table_name="financial_statement")
+@dlt.resource(table_name="financial_statement", primary_key=["ticker", "fiscal_year_end_date"])
 def company_financial_statement():
     for company in nasdaq_tickers_df["Symbol"]:
         yield from fetch_data("financials", company)
 
-@dlt.resource(table_name="balance_sheet")
+@dlt.resource(table_name="balance_sheet", primary_key=["ticker", "fiscal_year_end_date"])
 def company_balance_sheet():
     for company in nasdaq_tickers_df["Symbol"]:
         yield from fetch_data("balance_sheet", company)
 
-@dlt.resource(table_name="cashflow")
+@dlt.resource(table_name="cashflow", primary_key=["ticker", "fiscal_year_end_date"])
 def company_cashflow():
     for company in nasdaq_tickers_df["Symbol"]:
         yield from fetch_data("cashflow", company)

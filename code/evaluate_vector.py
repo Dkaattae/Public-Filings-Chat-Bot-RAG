@@ -41,7 +41,7 @@ with open(ground_truth_path, "r", encoding="utf-8") as f:
 
 # business_rows = [row for row in ground_truth if row.get("section") == "Business"]
 qdrant_results = evaluate(ground_truth, \
-    lambda q: vector_search.vector_search(q['question'], q['ticker'], limit=3))
+    lambda q: vector_search.vector_search(q['question'], q['ticker'], [q['year']], limit=3))
 
 print('hit rate: ', qdrant_results['hit_rate'])
 print('mrr: ', qdrant_results['mrr'])

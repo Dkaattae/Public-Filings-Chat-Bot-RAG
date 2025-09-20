@@ -45,6 +45,14 @@ def build_prompt(routing_target, question, search_results):
         you are a financial analyst, answering questions related to public company reports. 
         user asked an irrelevant question, reject friendly
         """.strip()
+    if routing_target == 'not_in_list':
+        answer_prompt = """
+        you are a financial analyst, answering questions related to public company reports.
+        user asked a question beyond your knowledge scope. 
+        reply politely saying the company or the year of filing is not in our database. 
+        we will add them soon. 
+        and then try to answer user's question as possible as you can. 
+        """.strip()
     return answer_prompt
 
 def llm(prompt):
@@ -66,7 +74,8 @@ def rag(sentence):
     routing_results_json = json.loads(routing_results)
     search_results = []
     if routing_results_json["target"] in ['qdrant', 'both']:
-        vector_search_result = vector_search.vector_search(sentence, routing_results_json["ticker_list"])
+        vector_search_result = vector_search.vector_search(sentence, \
+            routing_results_json["ticker_list"], routing_results_json["year_list"])
         context_texts = [d.payload["text"] for d in vector_search_result]
         flat_contexts = list(chain.from_iterable(context_texts))
         search_results.append("\n".join(flat_contexts))
