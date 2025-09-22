@@ -1,8 +1,8 @@
 What was the total revenue for [company] in [year/quarter]?
 What is the cost of revenue (COGS) for [company] last quarter?
 How much gross profit did [company] report in [period]?
-What is the operating income of [company] for the past fiscal year?
 What was the net income or net earnings for [company] in [year]?
+What is the operating income of [company] for the past fiscal year?
 What is the EBITDA or normalized EBITDA of [company]?
 How much did [company] spend on R&D or selling, general, and administrative expenses?
 What was the interest expense or interest income reported?

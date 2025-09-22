@@ -14,7 +14,7 @@ monitoring
 UI, streamlit
 
 ## flowchart
-![flowchart](images/RAG_pipeline_flowchart.drawio.png)
+![flowchart](images/rag_flowchart.drawio.png)
 
 ## steps
 1, get gemini api key from google ai studio, see llm model section
@@ -27,11 +27,11 @@ UI, streamlit
 8, run evaluate_router.py to get llm router metrics
 
 ## data source
+xbrl data from yahoo finance   
 100 nasdaq companies, dated back to 2023 to make data shorter.   
 text files from edgar 10k, chunk into sections   
 text files from edgar 8k, whole text    
 text files from edgar 10q, ???   
-xbrl data from yahoo finance
 
 ## data pipeline
 download text files from edgar to s3   
@@ -91,9 +91,10 @@ note: adding a code logic of year into searching will be very helpful with hit r
 store descriptions of qdrant database and duckdb database summary and schema in a file.    
 ask LLM if user question is related to any of above database. 
 if not domain related, target = irrelant
-if both database related, target = both
 if related to duckdb schema, target = duckdb
 if qdrant database related, target = qdrant
+if both database related, target = both
+if company mentioned not in company list, target = not_in_list
 
 ### workflow
 search data function:   
@@ -117,6 +118,7 @@ compare ground truth doc_id with doc_id in vector_search(gorund truth question)
 metric: hit rate and MRR   
 hit rate:  0.8037066040198382
 mrr:  0.6763247193944136
+
 ### duckdb number search eval   
 generate ground truth file for numbers     
 example      
@@ -124,11 +126,13 @@ question: what is tesla's last year revenue, answer: 97,700,000,000
 tolerate level (1%)    
 compare ground truth answer number with number_search(ground truth question)
 metric: % of correctly retrieval   
+
 ### router layer eval
 from above two ground truth files, put questions in router layer, compare true target to router target.   
 compare router llm generated target with ground truth retriever
 compare router llm generated ticker list with ground truth ticker list. 
 metric: accuracy, F1
+
 ### full pipeline eval
 combine above two ground truth files.    
 compare rag(ground truth question) with ground truth answer text

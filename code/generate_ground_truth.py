@@ -8,29 +8,43 @@ nasdaq_ticker_list = nasdaq_tickers_df['Symbol'].tolist()
 ticker_list = random.sample(nasdaq_ticker_list, 5)
 
 sql_query_template = """
-select t1.oe as oe2023, t2.oe as oe2022, t1.oe-t2.oe as oe_diff, t1.ticker
+select 
+  t1.ticker, company_info.short_name, 
+  max(fiscal_year) as last_fiscal_year, 
+  sum(t1.total_revenue) as cum_revenue
 from (
 SELECT
     ticker,
     extract(year from fiscal_year_end_date) as fiscal_year,
-    operating_expense as oe
+    total_revenue
 FROM edgar_data.financial_statement
-where extract(year from fiscal_year_end_date) = 2024 
-  and ticker = 'GOOG'
+where ticker in {ticker_list}
+order by ticker, fiscal_year desc
+limit 3
 ) t1
-left outer join (
-SELECT
-    ticker,
-    extract(year from fiscal_year_end_date) as fiscal_year,
-    operating_expense as oe
-FROM edgar_data.financial_statement
-where extract(year from fiscal_year_end_date) = 2023 
-  and ticker = 'GOOG'
-) t2
-  on t1.ticker = t2.ticker
+left outer join edgar_data.company_info
+  on t1.ticker = company_info.ticker
+group by t1.ticker, short_name
 """
 
-sql_query = sql_query_template.format(ticker_list=ticker_list)
+sql_template1 = """
+select fiscal_year, avg(de_ratio) as de_avg
+from (
+SELECT
+  balance_sheet.ticker, 
+  company_info.short_name, 
+  extract(year from fiscal_year_end_date) as fiscal_year,
+  balance_sheet.total_debt / total_equity_gross_minority_interest as de_ratio
+FROM edgar_data.balance_sheet
+inner join edgar_data.company_info
+  on balance_sheet.ticker = company_info.ticker
+WHERE fiscal_year = 2024
+  and company_info.industry like '%Software%'
+) T
+group by fiscal_year
+"""
+
+sql_query = sql_template1.format(ticker_list=ticker_list)
 result_dicts = con.execute(sql_query).fetchall()
 columns = [desc[0] for desc in con.description]
 result_dicts = [dict(zip(columns, row)) for row in result_dicts]
