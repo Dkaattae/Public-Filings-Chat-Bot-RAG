@@ -11,3 +11,6 @@ with '_dlt_id' in parent table.
 
 User question: {question}
 Query results from DuckDB: {result_dicts}
+
+please make sure the number has correct unit. 
+if user asks for ratio, rate percent, explicitly saying percent or % after number.  

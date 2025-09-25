@@ -17,7 +17,6 @@ def build_vector_search_prompt(sentence, search_results):
         prompt_template = f.read()
     
     prompt = prompt_template.format(question=sentence, context=context).strip()
-
     return prompt
 
 def llm(prompt):

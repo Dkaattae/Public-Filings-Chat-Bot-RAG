@@ -33,3 +33,5 @@ for i, gt in ground_truth.iterrows():
 
 number_accuracy = accuracy(relevance_total)
 print('number search accuracy is: ', number_accuracy)
+
+con.close()

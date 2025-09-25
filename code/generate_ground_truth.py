@@ -28,20 +28,9 @@ group by t1.ticker, short_name
 """
 
 sql_template1 = """
-select fiscal_year, avg(de_ratio) as de_avg
-from (
-SELECT
-  balance_sheet.ticker, 
-  company_info.short_name, 
-  extract(year from fiscal_year_end_date) as fiscal_year,
-  balance_sheet.total_debt / total_equity_gross_minority_interest as de_ratio
-FROM edgar_data.balance_sheet
-inner join edgar_data.company_info
-  on balance_sheet.ticker = company_info.ticker
-WHERE fiscal_year = 2024
-  and company_info.industry like '%Software%'
-) T
-group by fiscal_year
+select EXTRACT(year FROM to_timestamp(last_fiscal_year_end)) as fiscal_year
+from edgar_data.company_info
+where ticker = 'TSLA'
 """
 
 sql_query = sql_template1.format(ticker_list=ticker_list)

@@ -10,6 +10,16 @@ company_info__company_officers and company_info__corporate_actions are child tab
 derived from company_info. associate child table using column '_dlt_parent_it' 
 with '_dlt_id' in parent table. 
 
+usually user talk about fiscal year, it is the fiscal_year_end_date in all tables. 
+use extract(year from fiscal_year_end_date) to extract fiscal year from fiscal year end date.
+please do not use STRFTIME.
+if you are using last_fiscal_year_end from company.info
+try EXTRACT(year FROM to_timestamp(last_fiscal_year_end)) to extract year. 
+
+
+please uselook for schema of table financial_statement, balance_sheet and cashflow first, 
+if there are no needed columns, look for company_info and the rest. 
+
 You also have a list of tickers to filter by: {ticker_list}.
 All queries should only include rows where `ticker` is in this list.
 if ticker_list is empty, apply to all tickers.
@@ -19,4 +29,4 @@ QUESTION: {question}
 Please provide only the SQL query, without additional explanation or text,
 return plain text, without any markdown formatting, code fences (```), or language tags (like sql).
 Please add alias in computed column
-if cast filing date is needed, please use extract instead of strftime
+

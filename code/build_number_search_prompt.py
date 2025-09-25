@@ -4,7 +4,7 @@ from google import genai
 from dotenv import load_dotenv
 
 
-con = duckdb.connect("company_public_info.duckdb")
+duckdb_name = "company_public_info.duckdb"
 load_dotenv()
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
@@ -23,6 +23,7 @@ def llm(prompt):
 
 def get_schema():    
     dataset_name = "edgar_data"
+    con = duckdb.connect(duckdb_name)
     tables = con.execute(f"SHOW TABLES FROM {dataset_name}").fetchall()
     table_names = [t[0] for t in tables]
     internal_tables = ['_dlt_loads', '_dlt_pipeline_state', '_dlt_version']
@@ -32,6 +33,7 @@ def get_schema():
         schema = con.execute(f"DESCRIBE {dataset_name}.{table_name}").fetchall()
         columns = [col[0] for col in schema]
         duckdb_schema[table_name] = columns
+    con.close()
     return duckdb_schema
 
 def get_duckdb_results(duckdb_search_prompt):
@@ -39,15 +41,16 @@ def get_duckdb_results(duckdb_search_prompt):
     if sql_query.startswith("```"):
         sql_query = "\n".join(sql_query.split("\n")[1:-1])
     # print(sql_query)
-    result_dicts = con.execute(sql_query).fetchall()
-    columns = [desc[0] for desc in con.description]
-    result_dicts = [dict(zip(columns, row)) for row in result_dicts]
+    with duckdb.connect(duckdb_name) as con:
+        result_dicts = con.execute(sql_query).fetchall()
+        columns = [desc[0] for desc in con.description]
+        result_dicts = [dict(zip(columns, row)) for row in result_dicts]
     return result_dicts
 
 if __name__ == "__main__":
     # sentence = "what was the cost of revenue of tesla in 2024"
     # sentence = "Who is the current CEO of Tesla?"
-    sentence = "What percentage of revenue was cost of goods sold for tesla in 2024"
+    sentence = "What was the debt to equity ratio for tesla in fiscal year 2024"
     ticker_list = ['TSLA']
     # print(get_schema())
     duckdb_search_prompt = number_search_prompt(sentence, ticker_list, get_schema())

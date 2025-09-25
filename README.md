@@ -1,30 +1,30 @@
 # Edgar RAG
-## TODO
 
-### Evaluation
-ground truth file duckdb
+## TODO
 ground truth file router
 metrics
 % of correctly retrieved fields for duckdb eval
 accuracy, f1 for router eval
+fall back plan on downloading file to s3
 
-   
-need some research   
-monitoring   
-UI, streamlit
+monitoring
 
 ## flowchart
 ![flowchart](images/rag_flowchart.drawio.png)
 
 ## steps
-1, get gemini api key from google ai studio, see llm model section
-2, start qdrant server, see qdrant section
-3, load docs into qdrant by running text_pipeline.py
-4, load xbrl into duckdb by running xbrl_pipeline.py
-5, run rag_pipeline.py with question
-6, run evaluate_vector.py to get vector search metrics
-7, run evaluate_number.py to get number search metrics
-8, run evaluate_router.py to get llm router metrics
+1, get gemini api key from google ai studio, see llm model section   
+2, start qdrant server, see qdrant section   
+3, load docs into qdrant by running text_pipeline.py   
+note: aws access key is in dot env file.    
+      plan to add fallback logic to local if aws key not found
+4, load xbrl into duckdb by running xbrl_pipeline.py   
+5, run rag_pipeline.py with question   
+6, run evaluate_vector.py to get vector search metrics   
+7, run evaluate_number.py to get number search metrics (doing)  
+8, run evaluate_router.py to get llm router metrics (not done)      
+9, streamlit run chat.py, and go to localhost: 8501 to chat  
+10, monitoring (not done)     
 
 ## data source
 xbrl data from yahoo finance   
@@ -114,39 +114,49 @@ combine those answers if both related.
 ### qdrant vector search eval   
 ground truth file for text   
 related doc -> possible question -> doc_rag   
-compare ground truth doc_id with doc_id in vector_search(gorund truth question) 
+compare ground truth doc_id with doc_id in vector_search(gorund truth question)    
 metric: hit rate and MRR   
-hit rate:  0.8037066040198382
+hit rate:  0.8037066040198382   
 mrr:  0.6763247193944136
 
 ### duckdb number search eval   
 generate ground truth file for numbers     
 example      
-question: what is tesla's last year revenue, answer: 97,700,000,000  
+question: what is tesla's last year revenue, answer: 97,700,000,000     
 tolerate level (1%)    
-compare ground truth answer number with number_search(ground truth question)
+compare ground truth answer number with number_search(ground truth question)   
 metric: % of correctly retrieval   
 
 ### router layer eval
 from above two ground truth files, put questions in router layer, compare true target to router target.   
 compare router llm generated target with ground truth retriever
-compare router llm generated ticker list with ground truth ticker list. 
-metric: accuracy, F1
+compare router llm generated ticker list with ground truth ticker list.   
+metric: accuracy, F1   
 
 ### full pipeline eval
+ISSUE: units of number, could be billion, million, thousand, percent. have to convert to int if not percent, fload if percent. getting rid of dollar sign, percent sign.   
+
 combine above two ground truth files.    
-compare rag(ground truth question) with ground truth answer text
-text metric: rouge   
-number metric: accuracy
-combined score: 50% rouge_text + 50% accuracy_number if number exists
-rouge_text if number not exists
+compare rag(ground truth question) with ground truth answer text   
+text metric: rouge    
+number metric: accuracy   
+combined score: 50% rouge_text + 50% accuracy_number if number exists    
+rouge_text if number not exists    
 
 ## monitoring
-???   
+???    
 
-# Next Step
-1, add 8k, 10q, 4 in doc sources
-2, monitoring
-3, log chat history. if user ask follow up question, feed history back in
-4, orchestration
-5, deployment
+## UI
+streamlit   
+![chatbot1](images/chatbot1.png)
+![chatbot2](images/chatbot2.png)
+![chatbot3](images/chatbot3.png)
+![chatbot4](images/chatbot4.png)
+![chatbot5](images/chatbot5.png)
+
+# Next Step   
+1, add 8k, 10q, 4 in doc sources   
+2, monitoring   
+3, log chat history. if user ask follow up question, feed history back in   
+4, orchestration   
+5, deployment   
