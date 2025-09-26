@@ -9,22 +9,42 @@ fall back plan on downloading file to s3
 
 monitoring
 
+## description
+This RAG project is built on public filings from EDGAR, designed to answer user questions.   
+**Key challenges with EDGAR filings:**        
+- Filings are provided in HTML or XML formats, rather than plain text or JSON.   
+- Some document sections are placeholders without meaningful content.   
+- Financial data is embedded in XBRL, making extraction and interpretation more complex.   
+**Pipeline approach:**         
+- Filings are downloaded into Amazon S3 and converted into vector embeddings stored in Qdrant.   
+- XBRL financial data is extracted and loaded into DuckDB.   
+- This setup enables answering questions that involve both narrative text and numerical data.   
+**Why this approach:**      
+While many modern chatbots rely on web search to retrieve answers,    
+this project focuses on building a structured RAG pipeline.    
+Once the pipeline is complete and tested, it can be extended to cover private companies, where data is either not publicly available or harder to obtain.    
+
 ## flowchart
 ![flowchart](images/rag_flowchart.drawio.png)
 
 ## steps
-1, get gemini api key from google ai studio, see llm model section   
-2, start qdrant server, see qdrant section   
-3, load docs into qdrant by running text_pipeline.py   
-note: aws access key is in dot env file.    
+1, setup environment. 
+```
+cd code
+pip install -r requirements.txt
+```
+2, get gemini api key from google ai studio, see llm model section   
+3, start qdrant server, see qdrant section   
+4, load docs into qdrant by running text_pipeline.py   
+note: i have aws access key in dot env file.    
       plan to add fallback logic to local if aws key not found
-4, load xbrl into duckdb by running xbrl_pipeline.py   
-5, run rag_pipeline.py with question   
-6, run evaluate_vector.py to get vector search metrics   
-7, run evaluate_number.py to get number search metrics (doing)  
-8, run evaluate_router.py to get llm router metrics (not done)      
-9, streamlit run chat.py, and go to localhost: 8501 to chat  
-10, monitoring (not done)     
+5, load xbrl into duckdb by running xbrl_pipeline.py   
+6, run rag_pipeline.py with question   
+7, run evaluate_vector.py to get vector search metrics   
+8, run evaluate_number.py to get number search metrics (doing)  
+9, run evaluate_router.py to get llm router metrics (not done)      
+10, streamlit run chat.py, and go to localhost:8501 to chat  
+11, monitoring (not done)     
 
 ## data source
 xbrl data from yahoo finance   
@@ -75,7 +95,7 @@ full schema see files/duckdb_schema.txt
 ## llm model
 i use google gemini model gemini-2.0-flash, which has a free tier.   
 go to [google ai studio](https://aistudio.google.com/app/apikey) to get a free api key.   
-then export as environment variable   
+then put in dot env file   
 `GEMINI_API_KEY="<your_api_key>"`   
 make sure to include double quotes.   
 
@@ -135,7 +155,7 @@ metric: accuracy, F1
 
 ### full pipeline eval
 ISSUE: units of number, could be billion, million, thousand, percent. have to convert to int if not percent, fload if percent. getting rid of dollar sign, percent sign.   
-
+NOT DONE
 combine above two ground truth files.    
 compare rag(ground truth question) with ground truth answer text   
 text metric: rouge    
@@ -144,7 +164,7 @@ combined score: 50% rouge_text + 50% accuracy_number if number exists
 rouge_text if number not exists    
 
 ## monitoring
-???    
+NOT DONE   
 
 ## UI
 streamlit   
@@ -159,4 +179,5 @@ streamlit
 2, monitoring   
 3, log chat history. if user ask follow up question, feed history back in   
 4, orchestration   
-5, deployment   
+5, containerization   
+6, deployment   
