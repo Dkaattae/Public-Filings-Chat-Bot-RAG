@@ -11,14 +11,16 @@ monitoring
 
 ## description
 This RAG project is built on public filings from EDGAR, designed to answer user questions.   
-**Key challenges with EDGAR filings:**        
+**Key challenges with EDGAR filings:**   
 - Filings are provided in HTML or XML formats, rather than plain text or JSON.   
 - Some document sections are placeholders without meaningful content.   
 - Financial data is embedded in XBRL, making extraction and interpretation more complex.   
+
 **Pipeline approach:**         
 - Filings are downloaded into Amazon S3 and converted into vector embeddings stored in Qdrant.   
 - XBRL financial data is extracted and loaded into DuckDB.   
 - This setup enables answering questions that involve both narrative text and numerical data.   
+
 **Why this approach:**      
 While many modern chatbots rely on web search to retrieve answers,    
 this project focuses on building a structured RAG pipeline.    
@@ -37,7 +39,7 @@ pip install -r requirements.txt
 3, start qdrant server, see qdrant section   
 4, load docs into qdrant by running text_pipeline.py   
 note: i have aws access key in dot env file.    
-      plan to add fallback logic to local if aws key not found
+      plan to add fallback logic to local if aws key not found    
 5, load xbrl into duckdb by running xbrl_pipeline.py   
 6, run rag_pipeline.py with question   
 7, run evaluate_vector.py to get vector search metrics   
@@ -104,17 +106,19 @@ in vector database, only text is embeded as vector, other fields are in payload.
 embed the question using the same model and then compare cosine similarity with the vector in qdrant.     
 ticker and year filter is used.    
 
-note: adding a code logic of year into searching will be very helpful with hit rate. currently i have llm list recent year and then filter by that year. the recent year is current year, but the filing may be done the year before. i will add a json file listed ticker, fiscal year end and recent filing date. routing llm only spit out year mentioned in question, which could be 'recent', 'latest'. if so llm would return [] in year. 
+note: there are gaps between 10k file reporting date and fiscal year end date. now i am using last fiscal year in duckdb to get recent year. but the gap is actually common, because a lot of company has year end 12/31, so the fiscal year is previous year, but reporting year is next.    
+plan to add a file to map ticker, fiscal year end, reporting date.
+
 
 ## agentic RAG
 ### routing layer
-store descriptions of qdrant database and duckdb database summary and schema in a file.    
-ask LLM if user question is related to any of above database. 
-if not domain related, target = irrelant
-if related to duckdb schema, target = duckdb
-if qdrant database related, target = qdrant
-if both database related, target = both
-if company mentioned not in company list, target = not_in_list
+store descriptions of qdrant database and duckdb database summary and schema in a file.     
+ask LLM if user question is related to any of above database.    
+if not domain related, target = irrelant   
+if related to duckdb schema, target = duckdb   
+if qdrant database related, target = qdrant   
+if both database related, target = both   
+if company mentioned not in company list, target = not_in_list   
 
 ### workflow
 search data function:   
