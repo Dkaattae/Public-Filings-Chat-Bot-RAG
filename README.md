@@ -3,11 +3,9 @@
 ## TODO
 ground truth file router
 metrics
-% of correctly retrieved fields for duckdb eval
 accuracy, f1 for router eval
 fall back plan on downloading file to s3
 
-monitoring
 
 ## description
 This RAG project is built on public filings from EDGAR, designed to answer user questions.   
@@ -140,16 +138,20 @@ ground truth file for text
 related doc -> possible question -> doc_rag   
 compare ground truth doc_id with doc_id in vector_search(gorund truth question)    
 metric: hit rate and MRR   
-hit rate:  0.8037066040198382   
-mrr:  0.6763247193944136
+**hit rate:  0.8037066040198382**   
+**mrr:  0.6763247193944136**
 
 ### duckdb number search eval   
-generate ground truth file for numbers     
-example      
-question: what is tesla's last year revenue, answer: 97,700,000,000     
+generate ground truth file for numbers         
 tolerate level (1%)    
 compare ground truth answer number with number_search(ground truth question)   
 metric: % of correctly retrieval   
+**accuracy: 0.8889**
+note: llm has drifting issues! sometimes it will forget the rules.    
+accuracy could be different each time.   
+ISSUE: sometimes, the answer is a dictionary, with key unknown. 
+    considered relevant, if one of the value matches the final value of ground truth answer.    
+    some answers are not numbers, accuracy calculated manually for those questions. should be considered relevant if text match.   
 
 ### router layer eval
 from above two ground truth files, put questions in router layer, compare true target to router target.   
@@ -159,7 +161,7 @@ metric: accuracy, F1
 
 ### full pipeline eval
 ISSUE: units of number, could be billion, million, thousand, percent. have to convert to int if not percent, fload if percent. getting rid of dollar sign, percent sign.   
-NOT DONE
+NOT DONE   
 combine above two ground truth files.    
 compare rag(ground truth question) with ground truth answer text   
 text metric: rouge    
@@ -181,7 +183,8 @@ streamlit
 # Next Step   
 1, add 8k, 10q, 4 in doc sources   
 2, monitoring   
-3, log chat history. if user ask follow up question, feed history back in   
-4, orchestration   
-5, containerization   
-6, deployment   
+3, make it agentic, add a validation layer to check if results answers user question. when generating sql query, hallucination happens when asking total equity and duckdb dialect problem.   
+4, log chat history. if user ask follow up question, feed history back in   
+5, orchestration   
+6, containerization   
+7, deployment   

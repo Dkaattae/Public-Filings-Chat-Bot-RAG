@@ -13,4 +13,4 @@ User question: {question}
 Query results from DuckDB: {result_dicts}
 
 please make sure the number has correct unit. 
-if user asks for ratio, rate percent, explicitly saying percent or % after number.  
+If the user asks for a ratio, rate, or percent, explicitly include the percent sign (%) after the number in the output.

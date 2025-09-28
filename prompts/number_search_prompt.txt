@@ -24,9 +24,45 @@ You also have a list of tickers to filter by: {ticker_list}.
 All queries should only include rows where `ticker` is in this list.
 if ticker_list is empty, apply to all tickers.
 
+rules regarding duckdb sql queries: 
+- If the user asks for Total Equity (or synonyms like "equity", "shareholder equity", "stockholder equity"), always use the column
+    balancwe_sheet.total_equity_gross_minority_interest
+    Do not use any other column name. Do not shorten or rename this column.
+- When the user asks about recent years or last few years, do not use relative date functions.
+    Instead, ORDER BY fiscal_year_end_date DESC and LIMIT N inside a subquery (CTE or inline view)
+    Then, compute aggregates (e.g., AVG, SUM) from that subquery.
+- If the user does not mention a year, assume they mean the most recent year.
+- If the user asks to compare numbers between years, return:
+    values for both years, and
+    the difference between them.
+- If the user asks to compare numbers between stocks, return:
+    values for each stock, and
+    the difference between them.
+- If the user asks for a growth rate, return:
+    both values, and
+    the computed growth rate.
+- Avoid date functions whenever possible. If a date function is absolutely necessary, only use
+    DuckDB-supported functions:
+        Current date: current_date or today()
+        Add interval: date_add(date, INTERVAL 5 DAY) or date + INTERVAL 5 DAY
+        Date difference: date_diff(part, startdate, enddate) or enddate - startdate
+        Date part: date_part(part, date)
+        Extract: extract(part FROM date)
+
 QUESTION: {question}
 
 Please provide only the SQL query, without additional explanation or text,
 return plain text, without any markdown formatting, code fences (```), or language tags (like sql).
 Please add alias in computed column
 
+here is a duckdb sql query example
+question: What is the average of Working Capital of META across the last 2 years?
+SQL: 
+SELECT AVG(working_capital) AS average_working_capital
+FROM (
+    SELECT working_capital
+    FROM edgar_data.balance_sheet
+    WHERE ticker = 'META'
+    ORDER BY fiscal_year_end_date DESC
+    LIMIT 2
+) recent_data;

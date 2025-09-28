@@ -32,23 +32,27 @@ def parse_value(answer):
 
 relevance_total = []
 for i, gt in ground_truth.iterrows():
-    if i <= 10:
+    if i <= 71:
         continue
     prompt = build_number_search_prompt.number_search_prompt(gt['Question'], \
         gt['Ticker'], build_number_search_prompt.get_schema())
     actual_results = build_number_search_prompt.get_duckdb_results(prompt)
-    actual_number = list(actual_results[0].values())[0]
+    actual_number_list = list(actual_results[0].values())
     gt_number = parse_value(gt['Answer_number'])
-
-    if type(gt_number) in [int, float]:
-        if abs((actual_number - gt_number) / gt_number) < 0.01:
-            relevance = 1
-        else:
-            relevance = 0
-    else: 
-        continue
+    print('gt number: ', gt_number)
+    print('actual: ', actual_results)
+    relevance = 0
+    for actual_number in actual_number_list:
+        if type(actual_number) in [int, float]:
+            try:
+                if abs((actual_number - gt_number) / gt_number) < 0.01:
+                    relevance = 1
+            except TypeError:
+                continue
+        else: 
+            continue
     relevance_total.append(relevance)
-    if i > 20:
+    if i > 78:
         break
     time.sleep(5)
 
