@@ -25,6 +25,7 @@ All queries should only include rows where `ticker` is in this list.
 if ticker_list is empty, apply to all tickers.
 
 rules regarding duckdb sql queries: 
+- Only use column names from the schema provided. Do not invent or shorten names. Queries with unknown columns are invalid.
 - If the user asks for Total Equity (or synonyms like "equity", "shareholder equity", "stockholder equity"), always use the column
     balancwe_sheet.total_equity_gross_minority_interest
     Do not use any other column name. Do not shorten or rename this column.

@@ -38,7 +38,7 @@ def build_prompt(routing_target, question, search_results):
             duckdb_schema=build_number_search_prompt.get_schema())
     if routing_target == 'both':
         both_prompt_template = load_prompt("../prompts/vector_and_number_prompt.txt")
-        answer_prompt = both_prompt_template.format(question=sentence, \
+        answer_prompt = both_prompt_template.format(question=question, \
             qdrant_results=search_results[0], duckdb_results=search_results[1])
     if routing_target == 'irrelevant':
         answer_prompt = """
@@ -76,9 +76,9 @@ def rag(sentence):
     if routing_results_json["target"] in ['qdrant', 'both']:
         vector_search_result = vector_search.vector_search(sentence, \
             routing_results_json["ticker_list"], routing_results_json["year_list"])
-        print(routing_results_json)
+        # print(routing_results_json)
         context_texts = [d.payload["text"] for d in vector_search_result]
-        print(context_texts)
+        # print(context_texts)
         flat_contexts = list(chain.from_iterable(context_texts))
         search_results.append("\n".join(flat_contexts))
     if routing_results_json["target"] in ['duckdb', 'both']:
@@ -95,6 +95,6 @@ if __name__ == "__main__":
     # user_input = 'What is the debt to equity ratio for Tesla in fiscal year 2024?'
     # user_input = 'What is the year over year growth of net income for Nvidia from year 2023 to year 2024? '
     # user_input = "What are the risk factors for Apple in year 2024"
-    user_input = "how did operating expenses change for Netflix from year 2023 to year 2024?"
+    user_input = "Summarize Google’s discussion of advertising risks and show ad revenue growth from 2023 to 2024."
     answer = rag(user_input)
     print(answer)

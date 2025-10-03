@@ -57,7 +57,7 @@ def vector_search(sentence, ticker_list, year_list, limit=3):
                 )
             ]
         )
-    print(year_list)
+    # print(year_list)
     query_embedding = embed_model.embed([sentence])
     query_vector = list(query_embedding)[0]
     query_points = qd_client.query_points(
@@ -68,7 +68,7 @@ def vector_search(sentence, ticker_list, year_list, limit=3):
         limit=limit,
         with_payload=True
         )
-    print(query_points)
+    # print(query_points)
     return query_points.points
 
 if __name__ == "__main__":

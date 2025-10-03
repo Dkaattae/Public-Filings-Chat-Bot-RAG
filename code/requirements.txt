@@ -1,5 +1,6 @@
 dotenv
 pandas
+tqdm
 
 # Download Data Tool
 yfinance
@@ -7,7 +8,7 @@ requests
 bs4
 
 # Data Load Tool with S3 + Qdrant
-dlt[qdrant,s3]>=1.4.0   # or the latest stable release
+dlt[qdrant,s3]>=1.4.0  
 dlt[duckdb]
 
 # AWS SDK for Python
@@ -15,6 +16,10 @@ boto3
 
 # vector database
 qdrant-client[fastembed]
+fastembed
+
+# database
+duckdb
 
 # llm
 google-genai

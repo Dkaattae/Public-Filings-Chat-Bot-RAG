@@ -1,12 +1,5 @@
 # Edgar RAG
 
-## TODO
-ground truth file router
-metrics
-accuracy, f1 for router eval
-fall back plan on downloading file to s3
-
-
 ## description
 This RAG project is built on public filings from EDGAR, designed to answer user questions.   
 **Key challenges with EDGAR filings:**   
@@ -158,6 +151,8 @@ from above two ground truth files, put questions in router layer, compare true t
 compare router llm generated target with ground truth retriever
 compare router llm generated ticker list with ground truth ticker list.   
 metric: accuracy, F1   
+**accuracy: 0.94**
+note: most of the issues are in both category. 
 
 ### full pipeline eval
 ISSUE: units of number, could be billion, million, thousand, percent. have to convert to int if not percent, fload if percent. getting rid of dollar sign, percent sign.   

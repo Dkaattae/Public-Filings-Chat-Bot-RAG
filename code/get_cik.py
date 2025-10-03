@@ -1,6 +1,5 @@
 import pandas as pd
 import sys
-from kestra import Kestra
 
 def get_cik(ticker):
     cik_ticker_df = pd.read_csv('cik_ticker_dictionary.csv')
@@ -16,4 +15,3 @@ if __name__ == "__main__":
     outputs = {
         'CIK': output_data
     }
-    Kestra.outputs(outputs)

@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 import ast
 import time
 import random
@@ -24,6 +25,13 @@ def parse_value(answer):
             return x
     if x.replace(".", "", 1).isdigit():
         return float(x) if "." in x else int(x)
+    if x.startswith("{") and x.endswith("}"):
+        # quote keys that aren't already quoted
+        fixed = re.sub(r'(\w+)\s*:', r'"\1":', x)
+        try:
+            return ast.literal_eval(fixed)
+        except (ValueError, SyntaxError):
+            return x
     try:
         return ast.literal_eval(x)
     except (ValueError, SyntaxError):
@@ -32,28 +40,31 @@ def parse_value(answer):
 
 relevance_total = []
 for i, gt in ground_truth.iterrows():
-    if i <= 71:
-        continue
+    
     prompt = build_number_search_prompt.number_search_prompt(gt['Question'], \
         gt['Ticker'], build_number_search_prompt.get_schema())
     actual_results = build_number_search_prompt.get_duckdb_results(prompt)
     actual_number_list = list(actual_results[0].values())
     gt_number = parse_value(gt['Answer_number'])
-    print('gt number: ', gt_number)
-    print('actual: ', actual_results)
+    if type(gt_number) == dict:
+        compared_gt_number = list(gt_number.values())[-1]
+    else:
+        compared_gt_number = gt_number
+    # print('gt number: ', compared_gt_number)
+    # print('actual: ', actual_results)
     relevance = 0
-    for actual_number in actual_number_list:
-        if type(actual_number) in [int, float]:
-            try:
-                if abs((actual_number - gt_number) / gt_number) < 0.01:
-                    relevance = 1
-            except TypeError:
+    if type(compared_gt_number) == int:
+        for actual_number in actual_number_list:
+            if type(actual_number) in [int, float]:
+                try:
+                    if abs((actual_number - compared_gt_number) / compared_gt_number) < 0.01:
+                        relevance = 1
+                except TypeError:
+                    continue
+            else: 
                 continue
-        else: 
-            continue
     relevance_total.append(relevance)
-    if i > 78:
-        break
+    
     time.sleep(5)
 
 number_accuracy = accuracy(relevance_total)
