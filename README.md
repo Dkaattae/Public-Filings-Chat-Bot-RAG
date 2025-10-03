@@ -77,6 +77,10 @@ right side of data collection, click visualize
   }
 }
 ```
+visualize vectors in qdrant.
+from the following picture, we can infer sections other than Business and Risk Factors are alike.     
+We could enhance features focusing on those two sections. 
+![qdrant_visualization](images/qdrant_visualization2.png)
 
 ## duckdb
 schema:    
@@ -174,6 +178,7 @@ streamlit
 ![chatbot3](images/chatbot3.png)
 ![chatbot4](images/chatbot4.png)
 ![chatbot5](images/chatbot5.png)
+![chatbot6](images/chatbot6.png)
 
 # Next Step   
 1, add 8k, 10q, 4 in doc sources   
